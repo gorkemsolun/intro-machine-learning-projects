@@ -26,8 +26,13 @@ def transform_features(X):
     ----------
     X_transformed: matrix of floats: dim = (700,21), transformed input with 21 features
     """
-    X_transformed = np.zeros((700, 21))
-    # TODO: Enter your code here
+    linear = X
+    quadratic = X ** 2
+    exponential = np.exp(X)
+    cosine = np.cos(X)
+    constant = np.ones((X.shape[0], 1))
+
+    X_transformed = np.hstack((linear, quadratic, exponential, cosine, constant))
     assert X_transformed.shape == (700, 21)
     return X_transformed
 
@@ -40,7 +45,7 @@ def fit_logistic_regression(X, y):
     Parameters
     ----------
     X: matrix of floats, dim = (700,5), inputs with 5 features
-    y: array of integers \in {0,1}, dim = (700,), input labels
+    y: array of integers \\in {0,1}, dim = (700,), input labels
 
     Returns
     ----------
@@ -48,7 +53,25 @@ def fit_logistic_regression(X, y):
     """
     weights = np.zeros((21,))
     X_transformed = transform_features(X)
-    # TODO: Enter your code here
+
+    # Batch gradient descent for logistic regression
+    learning_rate = 0.1
+    max_iter = 20000
+    tol = 1e-6
+
+    y = y.astype(float)
+
+    for _ in range(max_iter):
+        scores = X_transformed @ weights
+        scores = np.clip(scores, -50, 50)
+        probs = 1.0 / (1.0 + np.exp(-scores))
+
+        gradient = (X_transformed.T @ (probs - y)) / X_transformed.shape[0]
+        weights -= learning_rate * gradient
+
+        if np.linalg.norm(gradient) < tol:
+            break
+
     assert weights.shape == (21,)
     return weights
 
